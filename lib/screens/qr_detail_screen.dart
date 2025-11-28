@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/qr_code_item.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class QRDetailScreen extends StatelessWidget {
   final QRCodeItem qrCode;
@@ -63,77 +64,21 @@ class QRDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Fundo do QR Code
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-            ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: QrImageView(
+          data: qrCode.content,
+          version: QrVersions.auto,
+          backgroundColor: Colors.white,
+          eyeStyle: QrEyeStyle(
+            eyeShape: QrEyeShape.square,
+            color: qrCode.color,
           ),
-          
-          // Ícone central do QR Code
-          Center(
-            child: Icon(
-              Icons.qr_code_2,
-              size: 150,
-              color: qrCode.color,
-            ),
+          dataModuleStyle: QrDataModuleStyle(
+            dataModuleShape: QrDataModuleShape.square,
+            color: qrCode.color,
           ),
-          
-          // Conteúdo no centro (se for pequeno)
-          if (qrCode.content.length <= 50)
-            Center(
-              child: Text(
-                qrCode.content,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: qrCode.color,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          
-          // Padrões de QR Code simulados nos cantos
-          Positioned(
-            top: 20,
-            left: 20,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: qrCode.color,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 20,
-            right: 20,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: qrCode.color,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: qrCode.color,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

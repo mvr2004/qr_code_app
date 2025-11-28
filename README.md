@@ -18,7 +18,10 @@ Uma aplicação Flutter moderna para gerir, ler e gerar QR Codes. Desenvolvida c
 - **Shared Preferences** - Armazenamento local
 - **Share Plus** - Partilha de conteúdo
 
+## ⚠️ Observações
+
+- Para que a leitura de QR Codes funcione, **é obrigatório conceder permissões de câmera** tanto no Android quanto no iOS.  
    
    
    
-- By : Marco Vicente 
+Made By : Marco Vicente 

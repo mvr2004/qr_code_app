@@ -13,17 +13,15 @@ class QRGeneratorTab extends StatefulWidget {
 class _QRGeneratorTabState extends State<QRGeneratorTab> {
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
-  String _qrData = '';
-  Color _qrColor = Colors.black;
-  double _qrSize = 200.0;
+  Color _qrColor = Colors.blue;
 
   final List<Color> _availableColors = [
-    Colors.black,
     Colors.blue,
     Colors.green,
     Colors.red,
     Colors.purple,
     Colors.orange,
+    Colors.teal,
   ];
 
   void _generateQRCode() {
@@ -49,10 +47,6 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
       );
       return;
     }
-
-    setState(() {
-      _qrData = text;
-    });
 
     final newQRCode = QRCodeItem(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -80,65 +74,7 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
     setState(() {
       _textController.clear();
       _titleController.clear();
-      _qrData = '';
     });
-  }
-
-  Widget _buildQRCodePreview() {
-    if (_qrData.isEmpty) {
-      return Container(
-        width: _qrSize,
-        height: _qrSize,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade50,
-        ),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.qr_code_2, size: 50, color: Colors.grey),
-            SizedBox(height: 8),
-            Text(
-              'QR Code aparecerá aqui',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Container(
-      width: _qrSize,
-      height: _qrSize,
-      decoration: BoxDecoration(
-        border: Border.all(color: _qrColor, width: 2),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
-      ),
-      child: Stack(
-        children: [
-          Center(
-            child: Icon(
-              Icons.qr_code_2,
-              size: _qrSize * 0.7,
-              color: _qrColor,
-            ),
-          ),
-          Center(
-            child: Text(
-              'QR Code\n$_qrData',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: _qrColor,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -148,29 +84,7 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextField(
-            controller: _titleController,
-            decoration: const InputDecoration(
-              labelText: 'Título do QR Code *',
-              hintText: 'Ex: Website pessoal, Contacto, etc.',
-              border: OutlineInputBorder(),
-              filled: true,
-              fillColor: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _textController,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Conteúdo do QR Code *',
-              hintText: 'URL, texto, número, email, etc...',
-              border: OutlineInputBorder(),
-              filled: true,
-              fillColor: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 20),
+          // Cor do QR Code
           const Text(
             'Cor do QR Code:',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -210,28 +124,35 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Tamanho do QR Code:',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+
+          // Título
+          TextField(
+            controller: _titleController,
+            decoration: const InputDecoration(
+              labelText: 'Título do QR Code *',
+              hintText: 'Ex: Website pessoal, Contacto, etc.',
+              border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
+            ),
           ),
-          const SizedBox(height: 8),
-          Slider(
-            value: _qrSize,
-            min: 150.0,
-            max: 300.0,
-            divisions: 5,
-            label: _qrSize.round().toString(),
-            onChanged: (value) {
-              setState(() {
-                _qrSize = value;
-              });
-            },
+          const SizedBox(height: 16),
+
+          // Conteúdo
+          TextField(
+            controller: _textController,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Conteúdo do QR Code *',
+              hintText: 'URL, texto, número, email, etc...',
+              border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
+            ),
           ),
           const SizedBox(height: 30),
-          Center(
-            child: _buildQRCodePreview(),
-          ),
-          const SizedBox(height: 30),
+
+          // Botões de ação
           ElevatedButton.icon(
             onPressed: _generateQRCode,
             style: ElevatedButton.styleFrom(
@@ -245,22 +166,30 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
               style: TextStyle(fontSize: 16),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: _clearFields,
             icon: const Icon(Icons.clear),
             label: const Text('Limpar Campos'),
           ),
+
+          // Informação
           const SizedBox(height: 20),
-          const Card(
-            color: Colors.blueAccent,
-            child: Padding(
+          Card(
+            color: Colors.blue[50],
+            child: const Padding(
               padding: EdgeInsets.all(12),
-              child: Text(
-                'O QR Code será automaticamente guardado e ficará disponível '
-                'mesmo após fechar a aplicação!',
-                style: TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
+              child: Column(
+                children: [
+                  Icon(Icons.info, color: Colors.blue, size: 40),
+                  SizedBox(height: 8),
+                  Text(
+                    'O QR Code será guardado na lista e poderá ser visualizado '
+                    'na página de detalhes!',
+                    style: TextStyle(color: Colors.blue),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ),

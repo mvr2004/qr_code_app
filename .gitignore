@@ -98,3 +98,53 @@ windows/
 # VS Code
 .vscode/
 
+
+# Flutter
+.flutter/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Android
+android/
+
+# iOS
+ios/
+
+# macOS  
+macos/
+
+# Windows
+windows/
+
+# VS Code
+.vscode/
+
+
+# Flutter
+.flutter/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Android
+android/
+
+# iOS
+ios/
+
+# macOS  
+macos/
+
+# Windows
+windows/
+
+# VS Code
+.vscode/
+

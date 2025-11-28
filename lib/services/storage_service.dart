@@ -5,7 +5,7 @@ import '../models/qr_code_item.dart';
 class StorageService {
   static const String _qrCodesKey = 'qr_codes';
 
-  // Carregar QR codes guardados
+  // Load Save QR codes 
   static Future<List<QRCodeItem>> loadQRCodes() async {
     final prefs = await SharedPreferences.getInstance();
     final String? qrCodesJson = prefs.getString(_qrCodesKey);
@@ -18,7 +18,7 @@ class StorageService {
     return [];
   }
 
-  // Guardar QR codes
+  // Save QR codes
   static Future<void> saveQRCodes(List<QRCodeItem> qrCodes) async {
     final prefs = await SharedPreferences.getInstance();
     final String encoded = json.encode(
