@@ -1,0 +1,100 @@
+# Flutter
+.flutter/
+flutter_*.json
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Android
+android/**/gradle-wrapper.jar
+android/.gradle
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+
+# iOS
+ios/.generated/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/.symlinks/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Windows
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugins.cmake
+
+# VS Code
+.vscode/
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Files
+*.lock
+*.log
+*.DS_Store
+*.swp
+*.swo
+.dart_tool/
+
+# Flutter
+.flutter/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Android
+android/
+
+# iOS
+ios/
+
+# macOS  
+macos/
+
+# Windows
+windows/
+
+# VS Code
+.vscode/
+
+
+# Flutter
+.flutter/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Android
+android/
+
+# iOS
+ios/
+
+# macOS  
+macos/
+
+# Windows
+windows/
+
+# VS Code
+.vscode/
+
