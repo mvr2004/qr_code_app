@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/qr_code_item.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../widgets/qr_content_widget.dart';
 
 class QRDetailScreen extends StatelessWidget {
   final QRCodeItem qrCode;
@@ -91,7 +92,6 @@ class QRDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Título
             Text(
               qrCode.title,
               style: const TextStyle(
@@ -101,20 +101,13 @@ class QRDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             
-            // Conteúdo
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: SelectableText(
-                qrCode.content,
-                style: const TextStyle(fontSize: 16),
-              ),
+            // Usa o componente reutilizável
+            QRContentWidget(
+              content: qrCode.content,
+              showPreview: true,
+              showActions: false, // Já temos botões de ação abaixo
             ),
+            
             const SizedBox(height: 16),
             
             // Informações adicionais
@@ -140,45 +133,6 @@ class QRDetailScreen extends StatelessWidget {
                 ),
               ],
             ),
-            
-            // Tipo de conteúdo
-            if (_isUrl(qrCode.content)) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.link, size: 16, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Link da Web',
-                    style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ] else if (_isEmail(qrCode.content)) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.email, size: 16, color: Colors.green),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Endereço de Email',
-                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ] else if (_isPhone(qrCode.content)) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.phone, size: 16, color: Colors.purple),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Número de Telefone',
-                    style: TextStyle(color: Colors.purple, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ],
           ],
         ),
       ),
