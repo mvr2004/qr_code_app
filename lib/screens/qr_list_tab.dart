@@ -57,74 +57,6 @@ class _QRListTabState extends State<QRListTab> {
     });
   }
 
-  void _addQRCode() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        String title = '';
-        String content = '';
-
-        return AlertDialog(
-          title: const Text('Adicionar QR Code'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Título',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (value) => title = value,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Conteúdo',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (value) => content = value,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (title.isNotEmpty && content.isNotEmpty) {
-                  final newQRCode = QRCodeItem(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    title: title,
-                    content: content,
-                    createdAt: DateTime.now(),
-                    color: _getRandomColor(widget.qrCodes.length),
-                    source: 'manual',
-                  );
-                  
-                  setState(() {
-                    widget.qrCodes.add(newQRCode);
-                    _filterQRCodes(); // Atualiza a pesquisa
-                  });
-                  widget.onAdd();
-                  
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('QR Code "$title" adicionado com sucesso!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              },
-              child: const Text('Adicionar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   void _deleteQRCode(String id) {
     setState(() {
@@ -327,12 +259,6 @@ class _QRListTabState extends State<QRListTab> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addQRCode,
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
@@ -355,7 +281,8 @@ class _QRListTabState extends State<QRListTab> {
           Text(
             _isSearching
                 ? 'Tente pesquisar com outros termos'
-                : 'Gere um QR Code, leia com a câmera\nou adicione manualmente',
+                // Atualizando a mensagem para não mencionar adição manual
+                : 'Gere um QR Code ou leia com a câmera',
             style: const TextStyle(color: Colors.grey),
             textAlign: TextAlign.center,
           ),

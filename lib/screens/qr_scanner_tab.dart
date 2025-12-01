@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../models/qr_code_item.dart';
-import '../widgets/qr_content_widget.dart'; 
+import '../widgets/qr_content_widget.dart';
 
 class QRScannerTab extends StatefulWidget {
   final Function(QRCodeItem) onQRCodeScanned;
@@ -18,6 +18,17 @@ class _QRScannerTabState extends State<QRScannerTab> {
   bool _torchEnabled = false;
   String? _lastScannedCode;
   String? _scannedContent;
+  
+  // REMOVER: Remover as variáveis de controle de cor daqui
+  // Color _selectedColor = Colors.green; // REMOVER
+  // final List<Color> _availableColors = [ // REMOVER
+  //   Colors.blue,                        // REMOVER
+  //   Colors.green,                       // REMOVER
+  //   Colors.red,                         // REMOVER
+  //   Colors.purple,                      // REMOVER
+  //   Colors.orange,                      // REMOVER
+  //   Colors.teal,                        // REMOVER
+  // ];                                    // REMOVER
 
   @override
   void dispose() {
@@ -63,73 +74,193 @@ class _QRScannerTabState extends State<QRScannerTab> {
       _scannedContent = null;
       _lastScannedCode = null;
       _isProcessing = false;
+      // REMOVER: _selectedColor = Colors.green;
     });
     cameraController.start();
+  }
+
+  // MÉTODO MODIFICADO: Agora aceita parâmetros para cores
+  Widget _buildColorSelector({
+    required Color selectedColor,
+    required Function(Color) onColorChanged,
+  }) {
+    final List<Color> availableColors = [
+      Colors.blue,
+      Colors.green,
+      Colors.red,
+      Colors.purple,
+      Colors.orange,
+      Colors.teal,
+      Colors.indigo,
+      Colors.pink,
+      Colors.cyan,
+      Colors.lightGreen,
+      Colors.deepOrange,
+      Colors.deepPurple,
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Cor do QR Code:',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 60,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: availableColors.length,
+            itemBuilder: (context, index) {
+              final color = availableColors[index];
+              return GestureDetector(
+                onTap: () {
+                  onColorChanged(color);
+                },
+                child: Container(
+                  width: 45,
+                  height: 45,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selectedColor == color ? Colors.black : Colors.transparent,
+                      width: 3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: selectedColor == color
+                      ? const Icon(Icons.check, color: Colors.white, size: 22)
+                      : null,
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Cor selecionada: ${selectedColor.value.toRadixString(16).toUpperCase()}',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
   }
 
   void _saveQRCode() {
     if (_scannedContent == null) return;
 
+    // Variáveis locais para o diálogo
+    Color selectedColor = Colors.green; // Cor padrão
+    String title = '';
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        String title = '';
-
-        return AlertDialog(
-          title: const Text('Guardar QR Code'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              QRContentWidget(
-                content: _scannedContent!,
-                showActions: false, // Não mostra ações no diálogo
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Título para guardar',
-                  border: OutlineInputBorder(),
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Guardar QR Code'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    QRContentWidget(
+                      content: _scannedContent!,
+                      showActions: false,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Seletor de cor DENTRO do diálogo (agora funciona)
+                    _buildColorSelector(
+                      selectedColor: selectedColor,
+                      onColorChanged: (newColor) {
+                        setStateDialog(() {
+                          selectedColor = newColor;
+                        });
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Título para guardar',
+                        border: OutlineInputBorder(),
+                        hintText: 'Ex: Website lido, Contacto, etc.',
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onChanged: (value) => title = value,
+                      autofocus: true,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Deixe em branco para usar data/hora como título',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
                 ),
-                onChanged: (value) => title = value,
-                autofocus: true,
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (title.isEmpty) {
-                  title = 'QR Code ${DateTime.now().toString().substring(0, 16)}';
-                }
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (title.isEmpty) {
+                      final now = DateTime.now();
+                      title = 'QR Code ${now.day}/${now.month}/${now.year} ${now.hour}:${now.minute}';
+                    }
 
-                final newQRCode = QRCodeItem(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  title: title,
-                  content: _scannedContent!,
-                  createdAt: DateTime.now(),
-                  color: Colors.green,
-                  source: 'scanned',
-                );
+                    final newQRCode = QRCodeItem(
+                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      title: title,
+                      content: _scannedContent!,
+                      createdAt: DateTime.now(),
+                      color: selectedColor, // Usar a cor selecionada no diálogo
+                      source: 'scanned',
+                    );
 
-                widget.onQRCodeScanned(newQRCode);
-                Navigator.of(context).pop();
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('QR Code "$title" guardado com sucesso!'),
-                    backgroundColor: Colors.green,
+                    widget.onQRCodeScanned(newQRCode);
+                    Navigator.of(context).pop();
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('QR Code "$title" guardado com sucesso!'),
+                        backgroundColor: selectedColor, // Usar a mesma cor
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                    
+                    _resetScanner();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: selectedColor, // Botão com a cor selecionada
                   ),
-                );
-                
-                _resetScanner();
-              },
-              child: const Text('Guardar'),
-            ),
-          ],
+                  child: const Text(
+                    'Guardar',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -142,7 +273,71 @@ class _QRScannerTabState extends State<QRScannerTab> {
           controller: cameraController,
           onDetect: _handleBarcode,
         ),
-        // ... (resto do scanner igual)
+        // Overlay com guias de scanner
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.6),
+                Colors.transparent,
+                Colors.transparent,
+                Colors.black.withOpacity(0.6),
+              ],
+              stops: const [0.0, 0.2, 0.8, 1.0],
+            ),
+          ),
+        ),
+        // Retângulo de scanner
+        Center(
+          child: Container(
+            width: 250,
+            height: 250,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white, width: 2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        // Botões de controle
+        Positioned(
+          top: 50,
+          right: 20,
+          child: IconButton(
+            icon: Icon(
+              _torchEnabled ? Icons.flash_on : Icons.flash_off,
+              color: Colors.white,
+              size: 30,
+            ),
+            onPressed: () {
+              setState(() {
+                _torchEnabled = !_torchEnabled;
+              });
+              cameraController.toggleTorch();
+            },
+          ),
+        ),
+        // Instruções
+        Positioned(
+          bottom: 100,
+          left: 0,
+          right: 0,
+          child: const Column(
+            children: [
+              Icon(Icons.qr_code_scanner, color: Colors.white, size: 40),
+              SizedBox(height: 10),
+              Text(
+                'Posicione o QR Code dentro do retângulo',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -181,7 +376,7 @@ class _QRScannerTabState extends State<QRScannerTab> {
                     QRContentWidget(
                       content: _scannedContent!,
                       showPreview: true,
-                      showActions: false, // As ações vão nos botões abaixo
+                      showActions: false,
                     ),
                   ],
                 ),
@@ -189,14 +384,18 @@ class _QRScannerTabState extends State<QRScannerTab> {
             ),
             const SizedBox(height: 20),
             
+            // REMOVER: Seletor de cor da tela de resultado
+            // _buildColorSelector(), // REMOVER
+            // const SizedBox(height: 20), // REMOVER
+            
             // Botões de ação específicos do conteúdo
             QRContentWidget(
               content: _scannedContent!,
-              showPreview: false, // Só mostra as ações
+              showPreview: false,
               showActions: true,
             ),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             
             // Botões principais
             Row(
@@ -207,7 +406,10 @@ class _QRScannerTabState extends State<QRScannerTab> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     icon: const Icon(Icons.camera_alt),
                     label: const Text('Ler Outro QR Code'),
@@ -220,7 +422,10 @@ class _QRScannerTabState extends State<QRScannerTab> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     icon: const Icon(Icons.save),
                     label: const Text('Guardar QR Code'),
