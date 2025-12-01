@@ -909,41 +909,290 @@ class QRContentWidget extends StatelessWidget {
   }
 
   void _saveContact(BuildContext context) {
-    // Implementar salvamento de contacto
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcionalidade de adicionar contacto em desenvolvimento'),
-        backgroundColor: Colors.blue,
+  // Extrair informações do contacto
+  final name = _parseContactName(content);
+  final phone = _parseContactPhone(content);
+  final email = _parseContactEmail(content);
+  
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+        title: const Text('Informação do Contacto'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Nome: $name', style: const TextStyle(fontWeight: FontWeight.bold)),
+            if (phone.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('Telefone: $phone'),
+              const SizedBox(height: 4),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _copyToClipboard(context, phone);
+                },
+                icon: const Icon(Icons.copy, size: 16),
+                label: const Text('Copiar Telefone'),
+              ),
+            ],
+            if (email.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('Email: $email'),
+              const SizedBox(height: 4),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _copyToClipboard(context, email);
+                },
+                icon: const Icon(Icons.copy, size: 16),
+                label: const Text('Copiar Email'),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fechar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _copyToClipboard(context, content);
+            },
+            child: const Text('Copiar Tudo'),
+          ),
+        ],
       ),
     );
   }
 
-  void _connectToWifi(BuildContext context) {
-    // Implementar conexão Wi-Fi
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcionalidade de conexão Wi-Fi em desenvolvimento'),
-        backgroundColor: Colors.orange,
+    void _connectToWifi(BuildContext context) {
+    // Extrair informações do Wi-Fi
+    final config = content.substring(5);
+    final Map<String, String> params = {};
+    
+    for (final param in config.split(';')) {
+      if (param.contains(':')) {
+        final parts = param.split(':');
+        if (parts.length >= 2) {
+          params[parts[0].toLowerCase()] = parts.sublist(1).join(':');
+        }
+      }
+    }
+    
+    final ssid = params['s'] ?? params['ssid'] ?? 'Desconhecida';
+    final password = params['p'] ?? params['pass'] ?? params['psk'] ?? params['password'] ?? '';
+    final security = params['t'] ?? params['type'] ?? 'WPA/WPA2';
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.wifi, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Configuração Wi-Fi'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Rede: $ssid', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 12),
+            Text('Tipo: $security'),
+            const SizedBox(height: 8),
+            if (password.isNotEmpty) ...[
+              Text('Password: $password'),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _copyToClipboard(context, password);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                icon: const Icon(Icons.copy),
+                label: const Text('Copiar Password'),
+              ),
+            ] else
+              const Text('🔓 Rede sem password'),
+            const SizedBox(height: 12),
+            const Text(
+              'Vá às definições Wi-Fi do seu dispositivo para conectar manualmente.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fechar'),
+          ),
+        ],
       ),
     );
   }
 
-  void _addToCalendar(BuildContext context) {
-    // Implementar adição ao calendário
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcionalidade de calendário em desenvolvimento'),
-        backgroundColor: Colors.teal,
+    void _addToCalendar(BuildContext context) {
+    final title = _parseEventTitle(content);
+    final details = _parseEventDetails(content);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.event, color: Colors.teal),
+            SizedBox(width: 8),
+            Text('Detalhes do Evento'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const Divider(height: 24),
+              if (details.isNotEmpty) ...[
+                Text(details),
+                const SizedBox(height: 16),
+              ],
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.teal.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.teal, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Adicione manualmente ao calendário do seu dispositivo',
+                        style: TextStyle(fontSize: 12, color: Colors.teal),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fechar'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _copyToClipboard(context, content);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.copy),
+            label: const Text('Copiar Detalhes'),
+          ),
+        ],
       ),
     );
   }
 
-  void _initiatePayment(BuildContext context) {
-    // Implementar pagamento
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcionalidade de pagamento em desenvolvimento'),
-        backgroundColor: Colors.green,
+ void _initiatePayment(BuildContext context) {
+    final paymentInfo = _parsePaymentInfo(content);
+    final method = _parsePaymentMethod(content);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.payment, color: Colors.green.shade700),
+            const SizedBox(width: 8),
+            const Text('Informação de Pagamento'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                paymentInfo,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              Text('Método: $method', style: const TextStyle(fontSize: 14)),
+              const Divider(height: 24),
+              const Text('Dados:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: SelectableText(
+                  content,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.warning, color: Colors.red, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Verifique sempre os dados antes de efetuar qualquer pagamento',
+                        style: TextStyle(fontSize: 12, color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fechar'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _copyToClipboard(context, content);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade700,
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.copy),
+            label: const Text('Copiar Dados'),
+          ),
+        ],
       ),
     );
   }
