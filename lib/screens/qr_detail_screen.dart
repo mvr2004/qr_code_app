@@ -4,6 +4,8 @@ import 'package:share_plus/share_plus.dart';
 import '../models/qr_code_item.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../widgets/qr_content_widget.dart';
+import '../services/localization_service.dart';
+import 'package:provider/provider.dart';
 
 class QRDetailScreen extends StatelessWidget {
   final QRCodeItem qrCode;
@@ -12,6 +14,8 @@ class QRDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localization = Provider.of<LocalizationService>(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(qrCode.title),
@@ -21,10 +25,12 @@ class QRDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () => _shareQRCode(context),
+            tooltip: localization.translate('detail_share'),
           ),
           IconButton(
             icon: const Icon(Icons.copy),
             onPressed: () => _copyContent(context),
+            tooltip: localization.translate('detail_copy'),
           ),
         ],
       ),
@@ -38,7 +44,7 @@ class QRDetailScreen extends StatelessWidget {
             const SizedBox(height: 30),
             
             // Informações do QR Code
-            _buildQRCodeInfo(),
+            _buildQRCodeInfo(context),
             const SizedBox(height: 20),
             
             // Ações
@@ -84,7 +90,9 @@ class QRDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQRCodeInfo() {
+  Widget _buildQRCodeInfo(BuildContext context) {
+    final localization = Provider.of<LocalizationService>(context);
+    
     return Card(
       elevation: 4,
       child: Padding(
@@ -105,7 +113,7 @@ class QRDetailScreen extends StatelessWidget {
             QRContentWidget(
               content: qrCode.content,
               showPreview: true,
-              showActions: false, // Já temos botões de ação abaixo
+              showActions: false,
             ),
             
             const SizedBox(height: 16),
@@ -116,7 +124,7 @@ class QRDetailScreen extends StatelessWidget {
                 Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 8),
                 Text(
-                  'Criado em: ${_formatDate(qrCode.createdAt)}',
+                  '${localization.translate('detail_created_at')} ${_formatDate(qrCode.createdAt)}',
                   style: TextStyle(color: Colors.grey[600]),
                 ),
               ],
@@ -128,7 +136,7 @@ class QRDetailScreen extends StatelessWidget {
                 Icon(Icons.source, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 8),
                 Text(
-                  'Origem: ${_getSourceLabel(qrCode.source)}',
+                  '${localization.translate('detail_source')} ${_getSourceLabel(qrCode.source, localization)}',
                   style: TextStyle(color: Colors.grey[600]),
                 ),
               ],
@@ -140,6 +148,8 @@ class QRDetailScreen extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
+    final localization = Provider.of<LocalizationService>(context);
+    
     return Row(
       children: [
         Expanded(
@@ -151,7 +161,7 @@ class QRDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
             icon: const Icon(Icons.copy),
-            label: const Text('Copiar Conteúdo'),
+            label: Text(localization.translate('detail_copy_button')),
           ),
         ),
         const SizedBox(width: 12),
@@ -164,7 +174,7 @@ class QRDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
             icon: const Icon(Icons.share),
-            label: const Text('Partilhar'),
+            label: Text(localization.translate('detail_share_button')),
           ),
         ),
       ],
@@ -172,10 +182,12 @@ class QRDetailScreen extends StatelessWidget {
   }
 
   void _copyContent(BuildContext context) {
+    final localization = Provider.of<LocalizationService>(context, listen: false);
+    
     Clipboard.setData(ClipboardData(text: qrCode.content));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Conteúdo copiado para a área de transferência!'),
+      SnackBar(
+        content: Text(localization.translate('detail_content_copied')),
         backgroundColor: Colors.green,
       ),
     );
@@ -192,32 +204,16 @@ class QRDetailScreen extends StatelessWidget {
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  String _getSourceLabel(String source) {
+  String _getSourceLabel(String source, LocalizationService localization) {
     switch (source) {
       case 'scanned':
-        return 'Lido com câmera';
+        return localization.translate('source_scanned');
       case 'generated':
-        return 'Gerado';
+        return localization.translate('source_generated');
       case 'manual':
-        return 'Adicionado manualmente';
+        return localization.translate('source_manual');
       default:
         return source;
     }
-  }
-
-  bool _isUrl(String text) {
-    return text.toLowerCase().startsWith('http://') || 
-           text.toLowerCase().startsWith('https://') ||
-           text.toLowerCase().startsWith('www.');
-  }
-
-  bool _isEmail(String text) {
-    return text.toLowerCase().startsWith('mailto:') ||
-           (text.contains('@') && text.contains('.'));
-  }
-
-  bool _isPhone(String text) {
-    return text.toLowerCase().startsWith('tel:') ||
-           RegExp(r'^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$').hasMatch(text);
   }
 }

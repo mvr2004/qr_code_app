@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/qr_code_item.dart';
 import 'qr_detail_screen.dart';
+import '../services/localization_service.dart';
+import 'package:provider/provider.dart';
 
 class QRListTab extends StatefulWidget {
   final List<QRCodeItem> qrCodes;
@@ -57,16 +59,17 @@ class _QRListTabState extends State<QRListTab> {
     });
   }
 
-
   void _deleteQRCode(String id) {
+    final localization = Provider.of<LocalizationService>(context, listen: false);
+    
     setState(() {
       widget.qrCodes.removeWhere((item) => item.id == id);
-      _filterQRCodes(); // Atualiza a pesquisa
+      _filterQRCodes();
     });
     widget.onDelete();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('QR Code removido com sucesso!'),
+      SnackBar(
+        content: Text(localization.translate('list_qr_deleted_successfully')),
         backgroundColor: Colors.red,
       ),
     );
@@ -81,28 +84,18 @@ class _QRListTabState extends State<QRListTab> {
   }
 
   String _getSourceLabel(String source) {
+    final localization = Provider.of<LocalizationService>(context, listen: false);
+    
     switch (source) {
       case 'scanned':
-        return 'Lido com câmera';
+        return localization.translate('source_scanned');
       case 'generated':
-        return 'Gerado';
+        return localization.translate('source_generated');
       case 'manual':
-        return 'Adicionado manualmente';
+        return localization.translate('source_manual');
       default:
         return source;
     }
-  }
-
-  Color _getRandomColor(int index) {
-    final colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.red,
-      Colors.teal,
-    ];
-    return colors[index % colors.length];
   }
 
   String _formatDate(DateTime date) {
@@ -111,6 +104,8 @@ class _QRListTabState extends State<QRListTab> {
 
   @override
   Widget build(BuildContext context) {
+    final localization = Provider.of<LocalizationService>(context);
+    
     return Scaffold(
       body: Column(
         children: [
@@ -120,7 +115,7 @@ class _QRListTabState extends State<QRListTab> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Pesquisar por título, conteúdo...',
+                hintText: localization.translate('list_search_placeholder'),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _isSearching
                     ? IconButton(
@@ -135,16 +130,14 @@ class _QRListTabState extends State<QRListTab> {
                 fillColor: Colors.grey[50],
               ),
             ),
-          ),
-
-          // Indicador de resultados da pesquisa
+          ),          // Indicador de resultados da pesquisa
           if (_isSearching)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Text(
-                    '${_filteredQRCodes.length} resultado(s) encontrado(s)',
+                    '${_filteredQRCodes.length} ${localization.translate('list_results_found')}',
                     style: const TextStyle(
                       color: Colors.grey,
                       fontSize: 14,
@@ -153,7 +146,7 @@ class _QRListTabState extends State<QRListTab> {
                   const Spacer(),
                   TextButton(
                     onPressed: _clearSearch,
-                    child: const Text('Limpar'),
+                    child: Text(localization.translate('list_search_clear')),
                   ),
                 ],
               ),
@@ -220,32 +213,33 @@ class _QRListTabState extends State<QRListTab> {
                               } else if (value == 'copy') {
                                 Clipboard.setData(ClipboardData(text: qrCode.content));
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Conteúdo copiado!'),
+                                  SnackBar(
+                                    content: Text(localization.translate('list_content_copied')),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
                               }
                             },
                             itemBuilder: (BuildContext context) => [
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'copy',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.copy, size: 20),
-                                    SizedBox(width: 8),
-                                    Text('Copiar Conteúdo'),
+                                    const Icon(Icons.copy, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(localization.translate('list_copy_content')),
                                   ],
                                 ),
                               ),
                               const PopupMenuDivider(),
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'delete',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete, color: Colors.red, size: 20),
-                                    SizedBox(width: 8),
-                                    Text('Eliminar', style: TextStyle(color: Colors.red)),
+                                    const Icon(Icons.delete, color: Colors.red, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(localization.translate('list_delete'), 
+                                         style: const TextStyle(color: Colors.red)),
                                   ],
                                 ),
                               ),
@@ -263,6 +257,8 @@ class _QRListTabState extends State<QRListTab> {
   }
 
   Widget _buildEmptyState() {
+    final localization = Provider.of<LocalizationService>(context);
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -274,15 +270,16 @@ class _QRListTabState extends State<QRListTab> {
           ),
           const SizedBox(height: 16),
           Text(
-            _isSearching ? 'Nenhum resultado encontrado' : 'Nenhum QR Code guardado',
+            _isSearching 
+                ? localization.translate('list_no_results')
+                : localization.translate('list_no_qr_codes'),
             style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
           const SizedBox(height: 8),
           Text(
             _isSearching
-                ? 'Tente pesquisar com outros termos'
-                // Atualizando a mensagem para não mencionar adição manual
-                : 'Gere um QR Code ou leia com a câmera',
+                ? localization.translate('list_search_suggestions')
+                : localization.translate('list_add_suggestions'),
             style: const TextStyle(color: Colors.grey),
             textAlign: TextAlign.center,
           ),
@@ -290,7 +287,7 @@ class _QRListTabState extends State<QRListTab> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _clearSearch,
-              child: const Text('Limpar Pesquisa'),
+              child: Text(localization.translate('list_search_clear')),
             ),
           ],
         ],

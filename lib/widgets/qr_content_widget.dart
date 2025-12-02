@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../services/localization_service.dart';
 
 enum QRType {
   url,
@@ -20,7 +22,7 @@ class QRContentWidget extends StatelessWidget {
   final String content;
   final bool showPreview;
   final bool showActions;
-  final QRType? forcedType; // Para forçar um tipo específico
+  final QRType? forcedType;
 
   const QRContentWidget({
     super.key,
@@ -32,21 +34,22 @@ class QRContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localization = Provider.of<LocalizationService>(context);
     final QRType type = forcedType ?? _detectType(content);
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (showPreview) _buildContentPreview(context, type),
+        if (showPreview) _buildContentPreview(context, type, localization),
         if (showActions) ...[
           const SizedBox(height: 12),
-          _buildActionButtons(context, type),
+          _buildActionButtons(context, type, localization),
         ],
       ],
     );
   }
 
-  Widget _buildContentPreview(BuildContext context, QRType type) {
+  Widget _buildContentPreview(BuildContext context, QRType type, LocalizationService localization) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -58,72 +61,69 @@ class QRContentWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Indicador do tipo
-          _buildTypeIndicator(type),
+          _buildTypeIndicator(type, localization),
           const SizedBox(height: 8),
-          
-          // Conteúdo formatado conforme o tipo
-          _buildFormattedContent(context, type),
+          _buildFormattedContent(context, type, localization),
         ],
       ),
     );
   }
 
-  Widget _buildTypeIndicator(QRType type) {
+  Widget _buildTypeIndicator(QRType type, LocalizationService localization) {
     final Map<QRType, Map<String, dynamic>> typeInfo = {
       QRType.url: {
         'icon': Icons.link,
-        'label': 'Link da Web',
+        'label': localization.translate('content_type_url'),
         'color': Colors.blue,
       },
       QRType.text: {
         'icon': Icons.text_snippet,
-        'label': 'Texto Simples',
+        'label': localization.translate('content_type_text'),
         'color': Colors.grey,
       },
       QRType.contact: {
         'icon': Icons.contact_page,
-        'label': 'Contacto',
+        'label': localization.translate('content_type_contact'),
         'color': Colors.purple,
       },
       QRType.wifi: {
         'icon': Icons.wifi,
-        'label': 'Rede Wi-Fi',
+        'label': localization.translate('content_type_wifi'),
         'color': Colors.orange,
       },
       QRType.location: {
         'icon': Icons.location_on,
-        'label': 'Localização',
+        'label': localization.translate('content_type_location'),
         'color': Colors.red,
       },
       QRType.event: {
         'icon': Icons.event,
-        'label': 'Evento',
+        'label': localization.translate('content_type_event'),
         'color': Colors.teal,
       },
       QRType.email: {
         'icon': Icons.email,
-        'label': 'Email',
+        'label': localization.translate('content_type_email'),
         'color': Colors.green,
       },
       QRType.sms: {
         'icon': Icons.sms,
-        'label': 'SMS',
+        'label': localization.translate('content_type_sms'),
         'color': Colors.indigo,
       },
       QRType.payment: {
         'icon': Icons.payment,
-        'label': 'Pagamento',
+        'label': localization.translate('content_type_payment'),
         'color': Colors.green.shade700,
       },
       QRType.phone: {
         'icon': Icons.phone,
-        'label': 'Telefone',
+        'label': localization.translate('content_type_phone'),
         'color': Colors.purple.shade700,
       },
       QRType.unknown: {
         'icon': Icons.qr_code,
-        'label': 'QR Code',
+        'label': localization.translate('content_type_unknown'),
         'color': Colors.grey,
       },
     };
@@ -146,11 +146,11 @@ class QRContentWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildFormattedContent(BuildContext context, QRType type) {
+  Widget _buildFormattedContent(BuildContext context, QRType type, LocalizationService localization) {
     switch (type) {
       case QRType.url:
         return GestureDetector(
-          onTap: () => _launchUrl(content, context),
+          onTap: () => _launchUrl(content, context, localization),
           child: Text(
             content,
             style: const TextStyle(
@@ -163,7 +163,7 @@ class QRContentWidget extends StatelessWidget {
       
       case QRType.email:
         return GestureDetector(
-          onTap: () => _launchEmail(content, context),
+          onTap: () => _launchEmail(content, context, localization),
           child: Text(
             _extractEmail(content),
             style: const TextStyle(
@@ -176,7 +176,7 @@ class QRContentWidget extends StatelessWidget {
       
       case QRType.phone:
         return GestureDetector(
-          onTap: () => _launchPhone(content, context),
+          onTap: () => _launchPhone(content, context, localization),
           child: Text(
             _extractPhone(content),
             style: const TextStyle(
@@ -192,12 +192,12 @@ class QRContentWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _parseWifiConfig(content),
+              _parseWifiConfig(content, localization),
               style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 4),
             Text(
-              _parseWifiDetails(content),
+              _parseWifiDetails(content, localization),
               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
@@ -208,7 +208,7 @@ class QRContentWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _parseContactName(content),
+              _parseContactName(content, localization),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             if (_parseContactPhone(content).isNotEmpty) ...[
@@ -230,7 +230,7 @@ class QRContentWidget extends StatelessWidget {
       
       case QRType.location:
         return GestureDetector(
-          onTap: () => _launchLocation(content, context),
+          onTap: () => _launchLocation(content, context, localization),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -244,7 +244,7 @@ class QRContentWidget extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Toque para abrir no mapa',
+                localization.translate('content_tap_to_open_map'),
                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ],
@@ -256,7 +256,7 @@ class QRContentWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _parseEventTitle(content),
+              _parseEventTitle(content, localization),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
@@ -269,12 +269,12 @@ class QRContentWidget extends StatelessWidget {
       
       case QRType.sms:
         return GestureDetector(
-          onTap: () => _launchSMS(content, context),
+          onTap: () => _launchSMS(content, context, localization),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _parseSMS(content),
+                _parseSMS(content, localization),
                 style: const TextStyle(
                   fontSize: 14,
                   color: Colors.indigo,
@@ -283,7 +283,7 @@ class QRContentWidget extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Toque para enviar SMS',
+                localization.translate('content_tap_to_send_sms'),
                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ],
@@ -295,12 +295,12 @@ class QRContentWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _parsePaymentInfo(content),
+              _parsePaymentInfo(content, localization),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
-              'Método: ${_parsePaymentMethod(content)}',
+              '${localization.translate('content_payment_method')}: ${_parsePaymentMethod(content, localization)}',
               style: const TextStyle(fontSize: 12),
             ),
           ],
@@ -316,32 +316,32 @@ class QRContentWidget extends StatelessWidget {
     }
   }
 
-  Widget _buildActionButtons(BuildContext context, QRType type) {
+  Widget _buildActionButtons(BuildContext context, QRType type, LocalizationService localization) {
     switch (type) {
       case QRType.url:
         return Row(
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _launchUrl(content, context),
+                onPressed: () => _launchUrl(content, context, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.open_in_browser),
-                label: const Text('Abrir Link'),
+                label: Text(localization.translate('action_open_link')),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _copyToClipboard(context, content),
+                onPressed: () => _copyToClipboard(context, content, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.copy),
-                label: const Text('Copiar'),
+                label: Text(localization.translate('action_copy')),
               ),
             ),
           ],
@@ -352,25 +352,25 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _launchEmail(content, context),
+                onPressed: () => _launchEmail(content, context, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.email),
-                label: const Text('Enviar Email'),
+                label: Text(localization.translate('action_send_email')),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _copyToClipboard(context, _extractEmail(content)),
+                onPressed: () => _copyToClipboard(context, _extractEmail(content), localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.copy),
-                label: const Text('Copiar'),
+                label: Text(localization.translate('action_copy')),
               ),
             ),
           ],
@@ -381,25 +381,25 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _launchPhone(content, context),
+                onPressed: () => _launchPhone(content, context, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.phone),
-                label: const Text('Ligar'),
+                label: Text(localization.translate('action_call')),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _copyToClipboard(context, _extractPhone(content)),
+                onPressed: () => _copyToClipboard(context, _extractPhone(content), localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.copy),
-                label: const Text('Copiar'),
+                label: Text(localization.translate('action_copy')),
               ),
             ),
           ],
@@ -410,13 +410,13 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _saveContact(context),
+                onPressed: () => _saveContact(context, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.contact_page),
-                label: const Text('Adicionar Contacto'),
+                label: Text(localization.translate('action_add_contact')),
               ),
             ),
           ],
@@ -427,25 +427,25 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _connectToWifi(context),
+                onPressed: () => _connectToWifi(context, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.wifi),
-                label: const Text('Ligar ao Wi-Fi'),
+                label: Text(localization.translate('action_connect_wifi')),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _copyToClipboard(context, content),
+                onPressed: () => _copyToClipboard(context, content, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.copy),
-                label: const Text('Copiar'),
+                label: Text(localization.translate('action_copy')),
               ),
             ),
           ],
@@ -456,13 +456,13 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _launchLocation(content, context),
+                onPressed: () => _launchLocation(content, context, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.map),
-                label: const Text('Abrir no Mapa'),
+                label: Text(localization.translate('action_open_map')),
               ),
             ),
           ],
@@ -473,13 +473,13 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _addToCalendar(context),
+                onPressed: () => _addToCalendar(context, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.calendar_today),
-                label: const Text('Adicionar ao Calendário'),
+                label: Text(localization.translate('action_add_calendar')),
               ),
             ),
           ],
@@ -490,13 +490,13 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _launchSMS(content, context),
+                onPressed: () => _launchSMS(content, context, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.sms),
-                label: const Text('Enviar SMS'),
+                label: Text(localization.translate('action_send_sms')),
               ),
             ),
           ],
@@ -507,13 +507,13 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _initiatePayment(context),
+                onPressed: () => _initiatePayment(context, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade700,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.payment),
-                label: const Text('Pagar'),
+                label: Text(localization.translate('action_pay')),
               ),
             ),
           ],
@@ -526,13 +526,13 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _copyToClipboard(context, content),
+                onPressed: () => _copyToClipboard(context, content, localization),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.copy),
-                label: const Text('Copiar Texto'),
+                label: Text(localization.translate('action_copy_text')),
               ),
             ),
           ],
@@ -540,7 +540,7 @@ class QRContentWidget extends StatelessWidget {
     }
   }
 
-  // DETECÇÃO DE TIPOS
+  // DETECÇÃO DE TIPOS (mantém o mesmo)
   QRType _detectType(String text) {
     if (_isUrl(text)) return QRType.url;
     if (_isEmail(text)) return QRType.email;
@@ -612,14 +612,13 @@ class QRContentWidget extends StatelessWidget {
     final lower = text.toLowerCase();
     return lower.contains('mbway') ||
            lower.contains('paypal') ||
-           lower.contains('pix') ||
            lower.contains('iban') ||
            lower.contains('bitcoin:') ||
            lower.contains('ethereum:') ||
            RegExp(r'^[a-z]{2,}://pay').hasMatch(lower);
   }
 
-  // PARSERS PARA CADA TIPO
+  // PARSERS PARA CADA TIPO - agora recebem LocalizationService como parâmetro
   String _extractEmail(String text) {
     if (text.toLowerCase().startsWith('mailto:')) {
       return text.substring(7);
@@ -634,7 +633,7 @@ class QRContentWidget extends StatelessWidget {
     return text;
   }
 
-  String _parseWifiConfig(String text) {
+  String _parseWifiConfig(String text, LocalizationService localization) {
     if (text.toLowerCase().startsWith('wifi:')) {
       final config = text.substring(5);
       final Map<String, String> params = {};
@@ -648,16 +647,16 @@ class QRContentWidget extends StatelessWidget {
         }
       }
       
-      final ssid = params['s'] ?? params['ssid'] ?? 'Desconhecida';
+      final ssid = params['s'] ?? params['ssid'] ?? localization.translate('content_unknown');
       final hasPassword = params.containsKey('p') || params.containsKey('pass') || 
                          params.containsKey('psk') || params.containsKey('password');
       
-      return 'Rede: $ssid\n${hasPassword ? '🔒 Com password' : '🔓 Rede aberta'}';
+      return '${localization.translate('content_network')}: $ssid\n${hasPassword ? localization.translate('content_with_password') : localization.translate('content_open_network')}';
     }
     return text;
   }
 
-  String _parseWifiDetails(String text) {
+  String _parseWifiDetails(String text, LocalizationService localization) {
     if (text.toLowerCase().startsWith('wifi:')) {
       final config = text.substring(5);
       final Map<String, String> params = {};
@@ -672,12 +671,12 @@ class QRContentWidget extends StatelessWidget {
       }
       
       final security = params['t'] ?? params['type'] ?? 'WPA/WPA2';
-      return 'Tipo: $security';
+      return '${localization.translate('content_type')}: $security';
     }
     return '';
   }
 
-  String _parseContactName(String text) {
+  String _parseContactName(String text, LocalizationService localization) {
     if (text.toLowerCase().contains('begin:vcard')) {
       final lines = text.split('\n');
       for (final line in lines) {
@@ -697,7 +696,7 @@ class QRContentWidget extends StatelessWidget {
         }
       }
     }
-    return 'Contacto';
+    return localization.translate('content_contact');
   }
 
   String _parseContactPhone(String text) {
@@ -730,14 +729,14 @@ class QRContentWidget extends StatelessWidget {
     return text;
   }
 
-  String _parseEventTitle(String text) {
+  String _parseEventTitle(String text, LocalizationService localization) {
     final lines = text.split('\n');
     for (final line in lines) {
       if (line.toLowerCase().startsWith('summary:')) {
         return line.substring(8);
       }
     }
-    return 'Evento';
+    return localization.translate('content_event');
   }
 
   String _parseEventDetails(String text) {
@@ -763,11 +762,11 @@ class QRContentWidget extends StatelessWidget {
     return result;
   }
 
-  String _parseSMS(String text) {
+  String _parseSMS(String text, LocalizationService localization) {
     if (text.toLowerCase().startsWith('smsto:')) {
       final parts = text.substring(6).split(':');
       if (parts.length >= 2) {
-        return 'Para: ${parts[0]}\nMensagem: ${parts[1]}';
+        return '${localization.translate('content_to')}: ${parts[0]}\n${localization.translate('content_message')}: ${parts[1]}';
       }
       return text.substring(6);
     } else if (text.toLowerCase().startsWith('sms:')) {
@@ -776,30 +775,28 @@ class QRContentWidget extends StatelessWidget {
     return text;
   }
 
-  String _parsePaymentInfo(String text) {
+  String _parsePaymentInfo(String text, LocalizationService localization) {
     final lower = text.toLowerCase();
-    if (lower.contains('mbway')) return 'MB Way';
-    if (lower.contains('paypal')) return 'PayPal';
-    if (lower.contains('pix')) return 'PIX Brasil';
-    if (lower.contains('bitcoin:')) return 'Bitcoin';
-    if (lower.contains('ethereum:')) return 'Ethereum';
-    if (lower.contains('iban')) return 'Transferência Bancária';
-    return 'Pagamento';
+    if (lower.contains('mbway')) return localization.translate('payment_mbway');
+    if (lower.contains('paypal')) return localization.translate('payment_paypal');
+    if (lower.contains('bitcoin:')) return localization.translate('payment_bitcoin');
+    if (lower.contains('ethereum:')) return localization.translate('payment_ethereum');
+    if (lower.contains('iban')) return localization.translate('payment_bank_transfer');
+    return localization.translate('content_payment');
   }
 
-  String _parsePaymentMethod(String text) {
+  String _parsePaymentMethod(String text, LocalizationService localization) {
     final lower = text.toLowerCase();
-    if (lower.contains('mbway')) return 'MB Way';
-    if (lower.contains('paypal')) return 'PayPal';
-    if (lower.contains('pix')) return 'PIX';
-    if (lower.contains('bitcoin:')) return 'Criptomoeda';
-    if (lower.contains('ethereum:')) return 'Criptomoeda';
-    if (lower.contains('iban')) return 'IBAN';
-    return 'Desconhecido';
+    if (lower.contains('mbway')) return localization.translate('payment_method_mbway');
+    if (lower.contains('paypal')) return localization.translate('payment_method_paypal');
+    if (lower.contains('bitcoin:')) return localization.translate('payment_method_crypto');
+    if (lower.contains('ethereum:')) return localization.translate('payment_method_crypto');
+    if (lower.contains('iban')) return localization.translate('payment_method_iban');
+    return localization.translate('content_unknown');
   }
 
-  // MÉTODOS DE AÇÃO
-  Future<void> _launchUrl(String url, BuildContext context) async {
+  // MÉTODOS DE AÇÃO - agora recebem LocalizationService como parâmetro
+  Future<void> _launchUrl(String url, BuildContext context, LocalizationService localization) async {
     String formattedUrl = url;
     if (!url.toLowerCase().startsWith('http') && !url.toLowerCase().startsWith('www.')) {
       formattedUrl = 'https://$url';
@@ -812,14 +809,14 @@ class QRContentWidget extends StatelessWidget {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {
-        _showErrorSnackbar(context, 'Não foi possível abrir o link');
+        _showErrorSnackbar(context, localization.translate('error_cannot_open_link'), localization);
       }
     } catch (e) {
-      _showErrorSnackbar(context, 'Link inválido');
+      _showErrorSnackbar(context, localization.translate('error_invalid_link'), localization);
     }
   }
 
-  Future<void> _launchEmail(String email, BuildContext context) async {
+  Future<void> _launchEmail(String email, BuildContext context, LocalizationService localization) async {
     String formattedEmail = email;
     if (!email.toLowerCase().startsWith('mailto:')) {
       formattedEmail = 'mailto:$email';
@@ -830,14 +827,14 @@ class QRContentWidget extends StatelessWidget {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {
-        _showErrorSnackbar(context, 'Não foi possível abrir o email');
+        _showErrorSnackbar(context, localization.translate('error_cannot_open_email'), localization);
       }
     } catch (e) {
-      _showErrorSnackbar(context, 'Email inválido');
+      _showErrorSnackbar(context, localization.translate('error_invalid_email'), localization);
     }
   }
 
-  Future<void> _launchPhone(String phone, BuildContext context) async {
+  Future<void> _launchPhone(String phone, BuildContext context, LocalizationService localization) async {
     String formattedPhone = phone;
     if (!phone.toLowerCase().startsWith('tel:')) {
       formattedPhone = 'tel:$phone';
@@ -848,14 +845,14 @@ class QRContentWidget extends StatelessWidget {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {
-        _showErrorSnackbar(context, 'Não foi possível fazer a chamada');
+        _showErrorSnackbar(context, localization.translate('error_cannot_make_call'), localization);
       }
     } catch (e) {
-      _showErrorSnackbar(context, 'Número de telefone inválido');
+      _showErrorSnackbar(context, localization.translate('error_invalid_phone'), localization);
     }
   }
 
-  Future<void> _launchLocation(String location, BuildContext context) async {
+  Future<void> _launchLocation(String location, BuildContext context, LocalizationService localization) async {
     String url = location;
     
     if (location.toLowerCase().startsWith('geo:')) {
@@ -872,14 +869,14 @@ class QRContentWidget extends StatelessWidget {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {
-        _showErrorSnackbar(context, 'Não foi possível abrir o mapa');
+        _showErrorSnackbar(context, localization.translate('error_cannot_open_map'), localization);
       }
     } catch (e) {
-      _showErrorSnackbar(context, 'Localização inválida');
+      _showErrorSnackbar(context, localization.translate('error_invalid_location'), localization);
     }
   }
 
-  Future<void> _launchSMS(String sms, BuildContext context) async {
+  Future<void> _launchSMS(String sms, BuildContext context, LocalizationService localization) async {
     String url = sms;
     
     if (!sms.toLowerCase().startsWith('smsto:') && !sms.toLowerCase().startsWith('sms:')) {
@@ -891,62 +888,62 @@ class QRContentWidget extends StatelessWidget {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {
-        _showErrorSnackbar(context, 'Não foi possível abrir o SMS');
+        _showErrorSnackbar(context, localization.translate('error_cannot_open_sms'), localization);
       }
     } catch (e) {
-      _showErrorSnackbar(context, 'SMS inválido');
+      _showErrorSnackbar(context, localization.translate('error_invalid_sms'), localization);
     }
   }
 
-  Future<void> _copyToClipboard(BuildContext context, String text) async {
+  Future<void> _copyToClipboard(BuildContext context, String text, LocalizationService localization) async {
     await Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Copiado para a área de transferência'),
+      SnackBar(
+        content: Text(localization.translate('message_copied_to_clipboard')),
         backgroundColor: Colors.green,
       ),
     );
   }
 
-  void _saveContact(BuildContext context) {
-  // Extrair informações do contacto
-  final name = _parseContactName(content);
-  final phone = _parseContactPhone(content);
-  final email = _parseContactEmail(content);
-  
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-        title: const Text('Informação do Contacto'),
+  void _saveContact(BuildContext context, LocalizationService localization) {
+    final name = _parseContactName(content, localization);
+    final phone = _parseContactPhone(content);
+    final email = _parseContactEmail(content);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(localization.translate('dialog_contact_info')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nome: $name', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('${localization.translate('content_name')}: $name', 
+                 style: const TextStyle(fontWeight: FontWeight.bold)),
             if (phone.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('Telefone: $phone'),
+              Text('${localization.translate('content_phone')}: $phone'),
               const SizedBox(height: 4),
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(context);
-                  _copyToClipboard(context, phone);
+                  _copyToClipboard(context, phone, localization);
                 },
                 icon: const Icon(Icons.copy, size: 16),
-                label: const Text('Copiar Telefone'),
+                label: Text(localization.translate('action_copy_phone')),
               ),
             ],
             if (email.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('Email: $email'),
+              Text('${localization.translate('content_email')}: $email'),
               const SizedBox(height: 4),
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(context);
-                  _copyToClipboard(context, email);
+                  _copyToClipboard(context, email, localization);
                 },
                 icon: const Icon(Icons.copy, size: 16),
-                label: const Text('Copiar Email'),
+                label: Text(localization.translate('action_copy_email')),
               ),
             ],
           ],
@@ -954,22 +951,21 @@ class QRContentWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar'),
+            child: Text(localization.translate('close')),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _copyToClipboard(context, content);
+              _copyToClipboard(context, content, localization);
             },
-            child: const Text('Copiar Tudo'),
+            child: Text(localization.translate('action_copy_all')),
           ),
         ],
       ),
     );
   }
 
-    void _connectToWifi(BuildContext context) {
-    // Extrair informações do Wi-Fi
+  void _connectToWifi(BuildContext context, LocalizationService localization) {
     final config = content.substring(5);
     final Map<String, String> params = {};
     
@@ -982,74 +978,75 @@ class QRContentWidget extends StatelessWidget {
       }
     }
     
-    final ssid = params['s'] ?? params['ssid'] ?? 'Desconhecida';
+    final ssid = params['s'] ?? params['ssid'] ?? localization.translate('content_unknown');
     final password = params['p'] ?? params['pass'] ?? params['psk'] ?? params['password'] ?? '';
     final security = params['t'] ?? params['type'] ?? 'WPA/WPA2';
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.wifi, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('Configuração Wi-Fi'),
+            const Icon(Icons.wifi, color: Colors.orange),
+            const SizedBox(width: 8),
+            Text(localization.translate('dialog_wifi_config')),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Rede: $ssid', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('${localization.translate('content_network')}: $ssid', 
+                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
-            Text('Tipo: $security'),
+            Text('${localization.translate('content_type')}: $security'),
             const SizedBox(height: 8),
             if (password.isNotEmpty) ...[
-              Text('Password: $password'),
+              Text('${localization.translate('content_password')}: $password'),
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(context);
-                  _copyToClipboard(context, password);
+                  _copyToClipboard(context, password, localization);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
                 ),
                 icon: const Icon(Icons.copy),
-                label: const Text('Copiar Password'),
+                label: Text(localization.translate('action_copy_password')),
               ),
             ] else
-              const Text('🔓 Rede sem password'),
+              Text('🔓 ${localization.translate('content_open_network')}'),
             const SizedBox(height: 12),
-            const Text(
-              'Vá às definições Wi-Fi do seu dispositivo para conectar manualmente.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            Text(
+              localization.translate('message_wifi_manual_connect'),
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar'),
+            child: Text(localization.translate('close')),
           ),
         ],
       ),
     );
   }
 
-    void _addToCalendar(BuildContext context) {
-    final title = _parseEventTitle(content);
+  void _addToCalendar(BuildContext context, LocalizationService localization) {
+    final title = _parseEventTitle(content, localization);
     final details = _parseEventDetails(content);
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.event, color: Colors.teal),
-            SizedBox(width: 8),
-            Text('Detalhes do Evento'),
+            const Icon(Icons.event, color: Colors.teal),
+            const SizedBox(width: 8),
+            Text(localization.translate('dialog_event_details')),
           ],
         ),
         content: SingleChildScrollView(
@@ -1072,14 +1069,14 @@ class QRContentWidget extends StatelessWidget {
                   color: Colors.teal.shade50,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.teal, size: 20),
-                    SizedBox(width: 8),
+                    const Icon(Icons.info_outline, color: Colors.teal, size: 20),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Adicione manualmente ao calendário do seu dispositivo',
-                        style: TextStyle(fontSize: 12, color: Colors.teal),
+                        localization.translate('message_add_to_calendar_manual'),
+                        style: const TextStyle(fontSize: 12, color: Colors.teal),
                       ),
                     ),
                   ],
@@ -1091,28 +1088,28 @@ class QRContentWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar'),
+            child: Text(localization.translate('close')),
           ),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(context);
-              _copyToClipboard(context, content);
+              _copyToClipboard(context, content, localization);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,
               foregroundColor: Colors.white,
             ),
             icon: const Icon(Icons.copy),
-            label: const Text('Copiar Detalhes'),
+            label: Text(localization.translate('action_copy_details')),
           ),
         ],
       ),
     );
   }
 
- void _initiatePayment(BuildContext context) {
-    final paymentInfo = _parsePaymentInfo(content);
-    final method = _parsePaymentMethod(content);
+  void _initiatePayment(BuildContext context, LocalizationService localization) {
+    final paymentInfo = _parsePaymentInfo(content, localization);
+    final method = _parsePaymentMethod(content, localization);
     
     showDialog(
       context: context,
@@ -1121,7 +1118,7 @@ class QRContentWidget extends StatelessWidget {
           children: [
             Icon(Icons.payment, color: Colors.green.shade700),
             const SizedBox(width: 8),
-            const Text('Informação de Pagamento'),
+            Text(localization.translate('dialog_payment_info')),
           ],
         ),
         content: SingleChildScrollView(
@@ -1134,9 +1131,11 @@ class QRContentWidget extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               const SizedBox(height: 16),
-              Text('Método: $method', style: const TextStyle(fontSize: 14)),
+              Text('${localization.translate('content_payment_method')}: $method', 
+                   style: const TextStyle(fontSize: 14)),
               const Divider(height: 24),
-              const Text('Dados:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(localization.translate('content_data'), 
+                   style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Container(
                 width: double.infinity,
@@ -1159,14 +1158,14 @@ class QRContentWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.red.shade200),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.warning, color: Colors.red, size: 20),
-                    SizedBox(width: 8),
+                    const Icon(Icons.warning, color: Colors.red, size: 20),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Verifique sempre os dados antes de efetuar qualquer pagamento',
-                        style: TextStyle(fontSize: 12, color: Colors.red),
+                        localization.translate('warning_check_payment_data'),
+                        style: const TextStyle(fontSize: 12, color: Colors.red),
                       ),
                     ),
                   ],
@@ -1178,26 +1177,26 @@ class QRContentWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar'),
+            child: Text(localization.translate('close')),
           ),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(context);
-              _copyToClipboard(context, content);
+              _copyToClipboard(context, content, localization);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade700,
               foregroundColor: Colors.white,
             ),
             icon: const Icon(Icons.copy),
-            label: const Text('Copiar Dados'),
+            label: Text(localization.translate('action_copy_data')),
           ),
         ],
       ),
     );
   }
 
-  void _showErrorSnackbar(BuildContext context, String message) {
+  void _showErrorSnackbar(BuildContext context, String message, LocalizationService localization) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),

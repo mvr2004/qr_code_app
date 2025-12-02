@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/qr_code_item.dart';
+import '../services/localization_service.dart';
+import 'package:provider/provider.dart';
 
 class QRGeneratorTab extends StatefulWidget {
   final Function(QRCodeItem) onQRCodeGenerated;
@@ -25,13 +27,15 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
   ];
 
   void _generateQRCode() {
+    final localization = Provider.of<LocalizationService>(context, listen: false);
+    
     final text = _textController.text.trim();
     final title = _titleController.text.trim();
 
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, digite algum texto para gerar o QR Code!'),
+        SnackBar(
+          content: Text(localization.translate('generate_error_empty_text')),
           backgroundColor: Colors.red,
         ),
       );
@@ -40,8 +44,8 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
 
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, adicione um título para o QR Code!'),
+        SnackBar(
+          content: Text(localization.translate('generate_error_empty_title')),
           backgroundColor: Colors.red,
         ),
       );
@@ -61,7 +65,7 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('QR Code "$title" gerado e guardado com sucesso!'),
+        content: Text(localization.translate('generate_success_message', replace: title)),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 2),
       ),
@@ -79,15 +83,17 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
 
   @override
   Widget build(BuildContext context) {
+    final localization = Provider.of<LocalizationService>(context);
+    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Cor do QR Code
-          const Text(
-            'Cor do QR Code:',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            localization.translate('generate_qr_color'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -128,10 +134,10 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
           // Título
           TextField(
             controller: _titleController,
-            decoration: const InputDecoration(
-              labelText: 'Título do QR Code *',
-              hintText: 'Ex: Website pessoal, Contacto, etc.',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: localization.translate('generate_title_label'),
+              hintText: localization.translate('generate_title_hint'),
+              border: const OutlineInputBorder(),
               filled: true,
               fillColor: Colors.white,
             ),
@@ -142,10 +148,10 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
           TextField(
             controller: _textController,
             maxLines: 4,
-            decoration: const InputDecoration(
-              labelText: 'Conteúdo do QR Code *',
-              hintText: 'URL, texto, número, email, etc...',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: localization.translate('generate_content_label'),
+              hintText: localization.translate('generate_content_hint'),
+              border: const OutlineInputBorder(),
               filled: true,
               fillColor: Colors.white,
             ),
@@ -161,32 +167,31 @@ class _QRGeneratorTabState extends State<QRGeneratorTab> {
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             icon: const Icon(Icons.qr_code_2),
-            label: const Text(
-              'Gerar e Guardar QR Code',
-              style: TextStyle(fontSize: 16),
+            label: Text(
+              localization.translate('generate_save_button'),
+              style: const TextStyle(fontSize: 16),
             ),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: _clearFields,
             icon: const Icon(Icons.clear),
-            label: const Text('Limpar Campos'),
+            label: Text(localization.translate('generate_clear_button')),
           ),
 
           // Informação
           const SizedBox(height: 20),
           Card(
             color: Colors.blue[50],
-            child: const Padding(
-              padding: EdgeInsets.all(12),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
               child: Column(
                 children: [
-                  Icon(Icons.info, color: Colors.blue, size: 40),
-                  SizedBox(height: 8),
+                  const Icon(Icons.info, color: Colors.blue, size: 40),
+                  const SizedBox(height: 8),
                   Text(
-                    'O QR Code será guardado na lista e poderá ser visualizado '
-                    'na página de detalhes!',
-                    style: TextStyle(color: Colors.blue),
+                    localization.translate('generate_info_text'),
+                    style: const TextStyle(color: Colors.blue),
                     textAlign: TextAlign.center,
                   ),
                 ],

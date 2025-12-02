@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../models/qr_code_item.dart';
 import '../widgets/qr_content_widget.dart';
+import '../services/localization_service.dart';
+import 'package:provider/provider.dart';
 
 class QRScannerTab extends StatefulWidget {
   final Function(QRCodeItem) onQRCodeScanned;
@@ -18,17 +20,6 @@ class _QRScannerTabState extends State<QRScannerTab> {
   bool _torchEnabled = false;
   String? _lastScannedCode;
   String? _scannedContent;
-  
-  // REMOVER: Remover as variáveis de controle de cor daqui
-  // Color _selectedColor = Colors.green; // REMOVER
-  // final List<Color> _availableColors = [ // REMOVER
-  //   Colors.blue,                        // REMOVER
-  //   Colors.green,                       // REMOVER
-  //   Colors.red,                         // REMOVER
-  //   Colors.purple,                      // REMOVER
-  //   Colors.orange,                      // REMOVER
-  //   Colors.teal,                        // REMOVER
-  // ];                                    // REMOVER
 
   @override
   void dispose() {
@@ -55,13 +46,15 @@ class _QRScannerTabState extends State<QRScannerTab> {
 
       cameraController.stop();
       
+      final localization = Provider.of<LocalizationService>(context, listen: false);
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('QR Code lido com sucesso!'),
+          content: Text(localization.translate('scan_qr_code_scanned_successfully')),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 3),
           action: SnackBarAction(
-            label: 'Fechar',
+            label: localization.translate('scan_close'),
             onPressed: _resetScanner,
           ),
         ),
@@ -74,16 +67,16 @@ class _QRScannerTabState extends State<QRScannerTab> {
       _scannedContent = null;
       _lastScannedCode = null;
       _isProcessing = false;
-      // REMOVER: _selectedColor = Colors.green;
     });
     cameraController.start();
   }
 
-  // MÉTODO MODIFICADO: Agora aceita parâmetros para cores
   Widget _buildColorSelector({
     required Color selectedColor,
     required Function(Color) onColorChanged,
   }) {
+    final localization = Provider.of<LocalizationService>(context);
+    
     final List<Color> availableColors = [
       Colors.blue,
       Colors.green,
@@ -102,9 +95,9 @@ class _QRScannerTabState extends State<QRScannerTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Cor do QR Code:',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        Text(
+          localization.translate('scan_qr_code_color'),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -147,7 +140,7 @@ class _QRScannerTabState extends State<QRScannerTab> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Cor selecionada: ${selectedColor.value.toRadixString(16).toUpperCase()}',
+          '${localization.translate('scan_selected_color')} ${selectedColor.value.toRadixString(16).toUpperCase()}',
           style: TextStyle(
             fontSize: 12,
             color: Colors.grey[600],
@@ -160,8 +153,10 @@ class _QRScannerTabState extends State<QRScannerTab> {
   void _saveQRCode() {
     if (_scannedContent == null) return;
 
+    final localization = Provider.of<LocalizationService>(context, listen: false);
+    
     // Variáveis locais para o diálogo
-    Color selectedColor = Colors.green; // Cor padrão
+    Color selectedColor = Colors.green;
     String title = '';
 
     showDialog(
@@ -170,7 +165,7 @@ class _QRScannerTabState extends State<QRScannerTab> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: const Text('Guardar QR Code'),
+              title: Text(localization.translate('scan_save_button')),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -181,7 +176,7 @@ class _QRScannerTabState extends State<QRScannerTab> {
                     ),
                     const SizedBox(height: 16),
                     
-                    // Seletor de cor DENTRO do diálogo (agora funciona)
+                    // Seletor de cor DENTRO do diálogo
                     _buildColorSelector(
                       selectedColor: selectedColor,
                       onColorChanged: (newColor) {
@@ -193,10 +188,10 @@ class _QRScannerTabState extends State<QRScannerTab> {
                     
                     const SizedBox(height: 16),
                     TextField(
-                      decoration: const InputDecoration(
-                        labelText: 'Título para guardar',
-                        border: OutlineInputBorder(),
-                        hintText: 'Ex: Website lido, Contacto, etc.',
+                      decoration: InputDecoration(
+                        labelText: localization.translate('scan_save_title'),
+                        border: const OutlineInputBorder(),
+                        hintText: localization.translate('scan_save_hint'),
                         filled: true,
                         fillColor: Colors.white,
                       ),
@@ -205,7 +200,7 @@ class _QRScannerTabState extends State<QRScannerTab> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Deixe em branco para usar data/hora como título',
+                      localization.translate('scan_save_placeholder'),
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -218,7 +213,7 @@ class _QRScannerTabState extends State<QRScannerTab> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancelar'),
+                  child: Text(localization.translate('scan_save_cancel')),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -232,7 +227,7 @@ class _QRScannerTabState extends State<QRScannerTab> {
                       title: title,
                       content: _scannedContent!,
                       createdAt: DateTime.now(),
-                      color: selectedColor, // Usar a cor selecionada no diálogo
+                      color: selectedColor,
                       source: 'scanned',
                     );
 
@@ -241,8 +236,8 @@ class _QRScannerTabState extends State<QRScannerTab> {
                     
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('QR Code "$title" guardado com sucesso!'),
-                        backgroundColor: selectedColor, // Usar a mesma cor
+                        content: Text(localization.translate('scan_qr_saved_successfully', replace: title)),
+                        backgroundColor: selectedColor,
                         behavior: SnackBarBehavior.floating,
                         duration: const Duration(seconds: 2),
                       ),
@@ -251,11 +246,11 @@ class _QRScannerTabState extends State<QRScannerTab> {
                     _resetScanner();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: selectedColor, // Botão com a cor selecionada
+                    backgroundColor: selectedColor,
                   ),
-                  child: const Text(
-                    'Guardar',
-                    style: TextStyle(color: Colors.white),
+                  child: Text(
+                    localization.translate('scan_save_save'),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -267,6 +262,8 @@ class _QRScannerTabState extends State<QRScannerTab> {
   }
 
   Widget _buildScannerView() {
+    final localization = Provider.of<LocalizationService>(context);
+    
     return Stack(
       children: [
         MobileScanner(
@@ -323,13 +320,13 @@ class _QRScannerTabState extends State<QRScannerTab> {
           bottom: 100,
           left: 0,
           right: 0,
-          child: const Column(
+          child: Column(
             children: [
-              Icon(Icons.qr_code_scanner, color: Colors.white, size: 40),
-              SizedBox(height: 10),
+              const Icon(Icons.qr_code_scanner, color: Colors.white, size: 40),
+              const SizedBox(height: 10),
               Text(
-                'Posicione o QR Code dentro do retângulo',
-                style: TextStyle(
+                localization.translate('scan_position_qr_code'),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -343,9 +340,11 @@ class _QRScannerTabState extends State<QRScannerTab> {
   }
 
   Widget _buildResultView() {
+    final localization = Provider.of<LocalizationService>(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QR Code Lido'),
+        title: Text(localization.translate('scan_qr_code_read')),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         leading: IconButton(
@@ -365,9 +364,9 @@ class _QRScannerTabState extends State<QRScannerTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Conteúdo lido:',
-                      style: TextStyle(
+                    Text(
+                      localization.translate('scan_content_read'),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -383,10 +382,6 @@ class _QRScannerTabState extends State<QRScannerTab> {
               ),
             ),
             const SizedBox(height: 20),
-            
-            // REMOVER: Seletor de cor da tela de resultado
-            // _buildColorSelector(), // REMOVER
-            // const SizedBox(height: 20), // REMOVER
             
             // Botões de ação específicos do conteúdo
             QRContentWidget(
@@ -412,7 +407,7 @@ class _QRScannerTabState extends State<QRScannerTab> {
                       ),
                     ),
                     icon: const Icon(Icons.camera_alt),
-                    label: const Text('Ler Outro QR Code'),
+                    label: Text(localization.translate('scan_read_another_qr')),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -428,7 +423,7 @@ class _QRScannerTabState extends State<QRScannerTab> {
                       ),
                     ),
                     icon: const Icon(Icons.save),
-                    label: const Text('Guardar QR Code'),
+                    label: Text(localization.translate('scan_save_qr_code')),
                   ),
                 ),
               ],
