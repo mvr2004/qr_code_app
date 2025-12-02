@@ -14,13 +14,10 @@
 
 ---
 
-
-🎬 App Demo Video
-
+## 🎬 App Demo Video
 Check out the app in action!
 
-https://img.youtube.com/vi/qtw561y2tVM/0.jpg
-
+[![QR Code App Demo](https://img.youtube.com/vi/qtw561y2tVM/0.jpg)](https://youtu.be/qtw561y2tVM)
 
 ---
 
