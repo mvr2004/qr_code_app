@@ -1,44 +1,19 @@
-# --- Flutter ---
-.flutter/
-.dart_tool/
-.packages
-.pub/
-.pub-cache/
-flutter_*.json
-build/
+# Ignorar tudo por defeito
+**
 
-# --- Android / iOS / Windows / macOS (ignorar tudo) ---
-android/
-ios/
-windows/
-macos/
-linux/
-
-# --- IDEs ---
-.vscode/
-.idea/
-*.iml
-
-# --- Outros ficheiros ---
-*.log
-*.lock
-*.DS_Store
-*.swp
-*.swo
-
-# --- Não ignorar estes ficheiros/pastas ---
+# Mas permitir estas pastas:
 !lib/
+!assets/
+!doc/
+
+# Permitir ficheiros importantes
 !pubspec.yaml
 !pubspec.lock
 !LICENSE
-!doc/
+!README.md
 
 # Permitir apenas o APK final
-!build/app/outputs/flutter-apk/app-release.apk
+!app-release.apk
 
-# Mas ignorar todo o resto dentro de "build"
-build/**/*
-!build/app/
-!build/app/outputs/
-!build/app/outputs/flutter-apk/
-!build/app/outputs/flutter-apk/app-release.apk
+# NÃO permitir ficheiros lixo do Windows
+app-release.apk:Zone.Identifier
