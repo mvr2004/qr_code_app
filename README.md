@@ -104,9 +104,43 @@ flutter run
 #### Android
 Add to `android/app/src/main/AndroidManifest.xml`:
 ```xml
+<!-- Required permissions -->
+<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+<!-- Camera features -->
 <uses-feature android:name="android.hardware.camera" />
 <uses-feature android:name="android.hardware.camera.autofocus" />
+
+<!-- Intent queries for opening links, emails, phone calls, etc. -->
+<queries>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="http" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mailto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.DIAL" />
+        <data android:scheme="tel" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.SENDTO" />
+        <data android:scheme="smsto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="geo" />
+    </intent>
+</queries>
 ```
 
 #### iOS
@@ -114,6 +148,15 @@ Add to `ios/Runner/Info.plist`:
 ```xml
 <key>NSCameraUsageDescription</key>
 <string>This app needs camera access to scan QR codes</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs access to your photo library to save QR codes</string>
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>tel</string>
+    <string>mailto</string>
+    <string>http</string>
+    <string>https</string>
+</array>
 ```
 
 ### 🗂️ Project Structure
@@ -256,9 +299,43 @@ flutter run
 #### Android
 Adicione ao `android/app/src/main/AndroidManifest.xml`:
 ```xml
+<!-- Permissões necessárias -->
+<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+<!-- Recursos da câmera -->
 <uses-feature android:name="android.hardware.camera" />
 <uses-feature android:name="android.hardware.camera.autofocus" />
+
+<!-- Queries para abrir links, emails, chamadas telefónicas, etc. -->
+<queries>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="http" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mailto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.DIAL" />
+        <data android:scheme="tel" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.SENDTO" />
+        <data android:scheme="smsto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="geo" />
+    </intent>
+</queries>
 ```
 
 #### iOS
@@ -266,6 +343,15 @@ Adicione ao `ios/Runner/Info.plist`:
 ```xml
 <key>NSCameraUsageDescription</key>
 <string>Esta aplicação precisa de acesso à câmera para ler QR codes</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Esta aplicação precisa de acesso à biblioteca de fotos para guardar QR codes</string>
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>tel</string>
+    <string>mailto</string>
+    <string>http</string>
+    <string>https</string>
+</array>
 ```
 
 ### 🗂️ Estrutura do Projeto
@@ -320,8 +406,6 @@ Este projeto está licenciado sob a Licença MIT - consulte o arquivo LICENSE pa
 
 <div align="center">
 
-⭐ Se este projeto foi útil, considere dar uma estrela!
-
-Made with ❤️ using Flutter
+RDS 2025
 
 </div>
