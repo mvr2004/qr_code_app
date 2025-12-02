@@ -14,10 +14,13 @@
 
 ---
 
-## 🎬 App Demo Video
+
+🎬 App Demo Video
+
 Check out the app in action!
 
-[![QR Code App Demo](https://img.youtube.com/vi/qtw561y2tVM/0.jpg)](https://youtu.be/qtw561y2tVM)
+https://img.youtube.com/vi/qtw561y2tVM/0.jpg
+
 
 ---
 
@@ -30,29 +33,29 @@ QR Code App is a comprehensive mobile application for managing QR Codes. Whether
 ### ✨ Key Features
 
 - **📸 QR Code Scanner**
-  - Real-time camera scanning with visual guidance
-  - Instant QR code recognition and parsing
+  - Real-time camera scanning
+  - Instant QR code recognition
+  - Support for multiple QR code formats
   - Torch/flashlight toggle for low-light conditions
-  - Automatic save functionality with color customization
 
 - **🎨 QR Code Generator**
   - Create custom QR codes from text, URLs, and more
-  - Choose from 12+ color themes
-  - Custom titles and descriptions
+  - Choose from 6+ color themes
+  - Add custom titles and descriptions
   - Instant preview of generated codes
 
-- **📚 Smart Library Management**
+- **📚 Smart Library**
   - Save and organize all your QR codes
-  - Advanced search with real-time filtering
+  - Advanced search functionality (by title, content, or source)
+  - Filter by creation date and type
   - Quick actions: copy, share, delete
-  - Sort by creation date, title, or type
 
-- **🎯 Intelligent Content Detection**
+- **🎯 Content Detection**
   - Automatic detection of content type (URL, email, phone, WiFi, etc.)
   - Context-aware actions for each type
   - One-tap actions (call, email, open link, connect to WiFi)
 
-- **🌐 Multi-language Interface**
+- **🌐 Bilingual Interface**
   - Full support for English and Portuguese
   - Easy language switching
   - All UI elements translated
@@ -111,8 +114,43 @@ flutter run
 #### Android
 Add to `android/app/src/main/AndroidManifest.xml`:
 ```xml
+<!-- Required permissions -->
+<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+<!-- Camera features -->
 <uses-feature android:name="android.hardware.camera" />
+<uses-feature android:name="android.hardware.camera.autofocus" />
+
+<!-- Intent queries for opening links, emails, phone calls, etc. -->
+<queries>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="http" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mailto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.DIAL" />
+        <data android:scheme="tel" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.SENDTO" />
+        <data android:scheme="smsto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="geo" />
+    </intent>
+</queries>
 ```
 
 #### iOS
@@ -120,6 +158,15 @@ Add to `ios/Runner/Info.plist`:
 ```xml
 <key>NSCameraUsageDescription</key>
 <string>This app needs camera access to scan QR codes</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs access to your photo library to save QR codes</string>
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>tel</string>
+    <string>mailto</string>
+    <string>http</string>
+    <string>https</string>
+</array>
 ```
 
 ### 🗂️ Project Structure
@@ -138,9 +185,20 @@ lib/
 │   ├── storage_service.dart     # Local persistence
 │   └── localization_service.dart # i18n support
 ├── widgets/
-│   └── qr_content_widget.dart   # Smart content display
+│   └── qr_content_widget.dart   # Reusable QR display
 └── main.dart                     # App entry point
 ```
+
+### 🔮 Future Enhancements
+
+- [ ] Cloud sync across devices
+- [ ] QR code batch operations
+- [ ] Export/Import QR code collections
+- [ ] QR code analytics
+- [ ] Custom QR code designs (logos, gradients)
+- [ ] OCR text extraction from images
+- [ ] Folder/tag organization system
+
 
 ### 📄 License
 
@@ -161,30 +219,30 @@ QR Code App é uma aplicação móvel completa para gestão de QR Codes. Seja pa
 ### ✨ Funcionalidades Principais
 
 - **📸 Leitor de QR Codes**
-  - Leitura em tempo real com guia visual
-  - Reconhecimento e análise instantânea
+  - Leitura em tempo real com câmera
+  - Reconhecimento instantâneo de QR codes
+  - Suporte para múltiplos formatos
   - Lanterna integrada para ambientes escuros
-  - Guardar automaticamente com personalização de cores
 
 - **🎨 Gerador de QR Codes**
   - Crie QR codes personalizados a partir de texto, URLs e mais
-  - Escolha entre mais de 12 cores
-  - Títulos e descrições personalizadas
-  - Pré-visualização instantânea
+  - Escolha entre mais de 6 temas de cores
+  - Adicione títulos e descrições personalizadas
+  - Pré-visualização instantânea dos códigos gerados
 
-- **📚 Gestão Inteligente de Biblioteca**
+- **📚 Biblioteca Inteligente**
   - Guarde e organize todos os seus QR codes
-  - Pesquisa avançada com filtragem em tempo real
+  - Pesquisa avançada (por título, conteúdo ou origem)
+  - Filtre por data de criação e tipo
   - Ações rápidas: copiar, partilhar, eliminar
-  - Ordenar por data, título ou tipo
 
-- **🎯 Deteção Inteligente de Conteúdo**
+- **🎯 Deteção de Conteúdo**
   - Deteção automática do tipo de conteúdo (URL, email, telefone, WiFi, etc.)
   - Ações contextuais para cada tipo
   - Ações com um toque (ligar, enviar email, abrir link, conectar WiFi)
 
-- **🌐 Interface Multi-idioma**
-  - Suporte completo para Português e Inglês
+- **🌐 Interface Bilingue**
+  - Suporte completo para Inglês e Português
   - Mudança fácil de idioma
   - Todos os elementos da UI traduzidos
 
@@ -242,8 +300,43 @@ flutter run
 #### Android
 Adicione ao `android/app/src/main/AndroidManifest.xml`:
 ```xml
+<!-- Permissões necessárias -->
+<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+<!-- Recursos da câmera -->
 <uses-feature android:name="android.hardware.camera" />
+<uses-feature android:name="android.hardware.camera.autofocus" />
+
+<!-- Queries para abrir links, emails, chamadas telefónicas, etc. -->
+<queries>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="http" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mailto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.DIAL" />
+        <data android:scheme="tel" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.SENDTO" />
+        <data android:scheme="smsto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="geo" />
+    </intent>
+</queries>
 ```
 
 #### iOS
@@ -251,6 +344,15 @@ Adicione ao `ios/Runner/Info.plist`:
 ```xml
 <key>NSCameraUsageDescription</key>
 <string>Esta aplicação precisa de acesso à câmera para ler QR codes</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Esta aplicação precisa de acesso à biblioteca de fotos para guardar QR codes</string>
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>tel</string>
+    <string>mailto</string>
+    <string>http</string>
+    <string>https</string>
+</array>
 ```
 
 ### 🗂️ Estrutura do Projeto
@@ -272,6 +374,17 @@ lib/
 │   └── qr_content_widget.dart   # Widget QR reutilizável
 └── main.dart                     # Ponto de entrada da app
 ```
+
+### 🔮 Melhorias Futuras
+
+- [ ] Sincronização na nuvem entre dispositivos
+- [ ] Operações em lote de QR codes
+- [ ] Exportar/Importar coleções de QR codes
+- [ ] Análise de QR codes
+- [ ] Designs personalizados (logos, gradientes)
+- [ ] Extração de texto OCR de imagens
+- [ ] Sistema de organização por pastas/tags
+
 
 ### 📄 Licença
 
